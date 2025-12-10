@@ -4,7 +4,6 @@
 
 int main()
 {
-
     size_t size = 50;
     Bit_array arr;
     init_bit_array(&arr, size, 0);

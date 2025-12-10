@@ -35,6 +35,8 @@ int toggle_bit(Bit_array* bit_array, size_t index);
 int get_bit(Bit_array* bit_array, size_t index);
 ssize_t find_first_bit(Bit_array* bit_array, uint8_t needle);
 
+#endif // BITARRAY_H
+
 #ifdef BITARRAY_IMPLEMENTATION
 
 // TODO return type mismatch with 'bitcount' field, but need to somehow indicate error
@@ -147,8 +149,9 @@ int get_bit(Bit_array* bit_array, size_t index)
 // allocates array of 'bit_count' aligned bits and initializes 'bit_count' bits with 1st bit of 'init_value'
 int init_bit_array(Bit_array* bit_array, size_t bit_count, uint8_t init_value)
 {
-    if(bit_array == NULL || bit_count < 1) 
-        return -1;
+    assert(bit_array != NULL && bit_count > 0);
+    //if(bit_array == NULL || bit_count < 1) 
+    //    return -1;
 
     elem_t last_byte_bits = bit_count % ELEMENT_SIZE;
     size_t arr_size = bit_count / ELEMENT_SIZE + (last_byte_bits == 0 ? 0 : 1);
@@ -160,7 +163,7 @@ int init_bit_array(Bit_array* bit_array, size_t bit_count, uint8_t init_value)
     bit_array->size = arr_size;
     bit_array->bitcount = bit_count;
     // init whole array
-    if(init_value & 1) { // if init with 0
+    if(init_value & 1) { // if init with 1
         for(int i = 0; i < arr_size; i++) {
             bit_array->items[i] = (elem_t)-1;   //since elem_t should be unsigned, -1 gives all 1s
         }
@@ -181,10 +184,8 @@ int init_bit_array(Bit_array* bit_array, size_t bit_count, uint8_t init_value)
             bit_array->items[arr_size - 1] &= (~bits_mask); 
         }
     }
-
     return 0;
 
 }
 #endif //BITARRAY_IMPLEMENTATION
 
-#endif // BITARRAY_H
