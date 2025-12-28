@@ -6,21 +6,29 @@
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
-#define USE_U32
 
 #if defined(USE_U8)
 #define elem_t uint8_t
 
+#elif defined(USE_U16)
+#define elem_t uint16_t
+
 #elif defined(USE_U32)
 #define elem_t uint32_t
 
-#else
+#elif defined(USE_U64)
 #define elem_t uint64_t
+
+#else
+#define elem_t uintptr_t
 #endif
+
 
 #define BITS_IN_BYTE 8
 
 #define ELEMENT_SIZE (sizeof(elem_t) * BITS_IN_BYTE)
+
+#define ELEM_T_MAX_VALUE ((1 << (ELEMENT_SIZE-1)) + (ELEMENT_SIZE - 1))
 
 typedef struct {
     elem_t *items;
@@ -53,6 +61,11 @@ int toggle_bit(Bit_array* bit_array, size_t index);
 // gets bit value at 'index' 
 // on success bit value is returned, on error abort() 
 int get_bit(Bit_array* bit_array, size_t index);
+
+// TODO implement cache (maybe just store 'last_found' bit or byte and start iterating from it (should also % index so
+//      that iteration would loop, and stop either when empty elemnt was found or reached starting position
+//      which would lead to a shitty performance on full or nearly full array, but for that case can set some flags in 
+//      'Bit_array' structure
 
 // searches 'bit_array' for 1st bit of 'needle'
 // on succes returns index of first found bit, on error -1
@@ -194,7 +207,7 @@ int init_bit_array(Bit_array* bit_array, size_t bit_count, uint8_t init_value)
 {
     assert(bit_array != NULL);
     assert(bit_count > 0);
-
+    
     elem_t last_byte_bits = bit_count % ELEMENT_SIZE;
     size_t arr_size = bit_count / ELEMENT_SIZE + (last_byte_bits == 0 ? 0 : 1);
     bit_array->items = malloc(sizeof(elem_t) * arr_size);
